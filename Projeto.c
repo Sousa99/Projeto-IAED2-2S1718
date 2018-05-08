@@ -3,15 +3,15 @@
 #include <stdlib.h>
 
 /* Define Constants */
-#define MAXINPUT 1000
+#define MAXINPUT 100000
 #define MAXCOMMAND 9
 #define MAXDESCRIPTION 8001
 #define MAXDEPENDENCIES 10
 
 /* Define Structs */
-typedef struct {
+typedef struct task {
     unsigned long id, duration;
-    unsigned long dependencies[MAXDEPENDENCIES];
+    struct task *dependencies[MAXDEPENDENCIES];
     char description[MAXDESCRIPTION];
 
 } Task;
@@ -30,16 +30,14 @@ typedef struct {
 /* ---------- Main ---------- */
 int main(int argc, char **argv) {
 	char input[MAXINPUT];
-    char command[MAXCOMMAND];
+    char *data;
 
 	do {
-		input[0] = ' ';
-
 		fgets(input, MAXINPUT, stdin);
-        printf("Input: %s", input);
-		sscanf(input, "%s", command);
-        printf("Command: %s\n", command);
-        printf("Input: %s", input);
+        data = input;
+        
+
+
 
 	
 	} while (strcmp(command, "exit"));
