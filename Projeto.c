@@ -29,14 +29,38 @@ typedef struct task {
 
 /* ---------- Main ---------- */
 int main(int argc, char **argv) {
-	char input[MAXINPUT];
-    char *data;
+	char input[MAXINPUT], command[MAXINPUT];
+    char * data = input;
+    int offset = 0;
 
+    *data = '\n';
 	do {
-		fgets(input, MAXINPUT, stdin);
-        data = input;
-        
+        if (*data == '\n') {
+            fgets(input, MAXINPUT, stdin);
+            data = input;
+        }
 
+        sscanf(data, "%s%n", command, &offset);
+        data = data + offset;
+
+        if (!strcmp(command, "add")) {
+            printf("1\n");
+        }
+        else if (!strcmp(command, "duration")) {
+            printf("2\n");
+        }
+        else if (!strcmp(command, "depend")) {
+            printf("3\n");
+        }
+        else if (!strcmp(command, "remove")) {
+            printf("4\n");
+        }
+        else if (!strcmp(command, "path")) {
+            printf("5\n");
+        }
+        else if (strcmp(command, "exit")) {
+            printf("illegal arguments\n");
+        }
 
 
 	
