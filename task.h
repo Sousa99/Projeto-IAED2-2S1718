@@ -14,7 +14,7 @@ typedef struct node * link;
 
 typedef struct task {
     unsigned long id, duration, ndependencies;
-    struct task *dependencies[MAXDEPENDENCIES];
+    struct task **dependencies;
     string description;
 } * task_link;
 

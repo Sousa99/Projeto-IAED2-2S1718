@@ -53,7 +53,8 @@ void duration(list * tasks, string buffer) {
 
     while (current != NULL) {
         if (current->task->duration >= threshold) {
-            printf("%lu %lu", current->task->id, current->task->duration);
+            printf("%lu \"%s\" %lu",
+                current->task->id, current->task->description, current->task->duration);
             for (i = 0; i < current->task->ndependencies; i++) {
                 printf(" %lu", current->task->dependencies[i]->id);
             }
