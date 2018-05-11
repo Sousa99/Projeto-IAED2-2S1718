@@ -28,25 +28,25 @@ link createNode(task_link new_task) {
 }
 
 /* ---------- Asked Functions ---------- */
-void add(list * tasks, string buffer) {
-    struct task * new_task = createTask(tasks, buffer);
+void add(list * tasksList, string buffer) {
+    struct task * new_task = createTask(tasksList, buffer);
     struct node * new_node = createNode(new_task);
 
-    if (tasks->first == NULL && tasks->last == NULL) {
-        tasks->first = new_node;
-        tasks->last = new_node;
+    if (tasksList->first == NULL && tasksList->last == NULL) {
+        tasksList->first = new_node;
+        tasksList->last = new_node;
     }
     else {
-        new_node->prev = tasks->last;
-        tasks->last->next = new_node;
-        tasks->last = new_node;
+        new_node->prev = tasksList->last;
+        tasksList->last->next = new_node;
+        tasksList->last = new_node;
     }
 }
 
-void duration(list * tasks, string buffer) {
+void duration(list * tasksList, string buffer) {
     int i, offset = 0;
     long unsigned threshold = 0;
-    struct node * current = tasks->first;
+    struct node * current = tasksList->first;
 
     sscanf(buffer, "%lu%n", &threshold, &offset);
     buffer = buffer + offset;
@@ -64,16 +64,33 @@ void duration(list * tasks, string buffer) {
     }
 }
 
+void dependents_list(list * tasksList, string buffer) {
+    int offset = 0;
+    long unsigned i, task_id;
+    struct task * searched;
+
+    sscanf(buffer, "%lu%n", &task_id, &offset);
+    buffer = buffer + offset;
+    searched = searchTask(tasksList, task_id);
+
+    printf("%lu:", searched->id);
+    if (searched->ndependents == 0) printf(" no dependencies");
+    else
+        for (i = 0; i < searched->ndependents; i++)
+            printf(" %lu", searched->dependents[i]->id);
+    printf("\n");
+}
+
 /* ---------- Main ---------- */
 int main(int argc, string*argv) {
 	char input[MAXINPUT], command[MAXINPUT];
     string buffer;
     int offset;
 
-    list * tasks;
-    tasks = malloc(sizeof(struct node));
-    tasks->first = NULL;
-    tasks->last = NULL;
+    list * tasksList;
+    tasksList = malloc(sizeof(struct node));
+    tasksList->first = NULL;
+    tasksList->last = NULL;
 
     buffer = input;
     offset = 0;
@@ -87,13 +104,13 @@ int main(int argc, string*argv) {
         buffer = buffer + offset;
 
         if (!strcmp(command, "add")) {
-            add(tasks, buffer);
+            add(tasksList, buffer);
         }
         else if (!strcmp(command, "duration")) {
-            duration(tasks, buffer);
+            duration(tasksList, buffer);
         }
         else if (!strcmp(command, "depend")) {
-            printf("3\n");
+            dependents_list(tasksList, buffer);
         }
         else if (!strcmp(command, "remove")) {
             printf("4\n");

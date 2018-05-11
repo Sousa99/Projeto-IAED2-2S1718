@@ -8,7 +8,9 @@ task_link setupTask() {
     new_task->description = NULL;
     new_task->duration = 0;
     new_task->dependencies = NULL;
+    new_task->dependents = NULL;
     new_task->ndependencies = 0;
+    new_task->ndependents = 0;
     return new_task;
 }
 
@@ -26,6 +28,29 @@ string taskDescription(string * buffer) {
     return string;
 }
 
+void taskDependencies(list * tasks, task_link new_task, string * buffer) {
+    int offset;
+    long unsigned ndependencies = 0, dependencie;
+    struct task * searched;
+
+    while (** buffer != '\n') {
+        sscanf(*buffer, "%lu%n", &dependencie, &offset);
+        *buffer = *buffer + offset;
+
+        ndependencies ++;
+
+        searched = searchTask(tasks, dependencie);
+        new_task->dependencies = realloc(new_task->dependencies, sizeof(struct task)*(ndependencies));
+        new_task->dependencies[ndependencies-1] = searched;
+        
+        searched->ndependents ++;
+        searched->dependents = realloc(searched->dependents, sizeof(struct task)*(searched->ndependents));
+        searched->dependents[searched->ndependents - 1] = new_task;
+
+    }
+    new_task->ndependencies = ndependencies;
+}
+
 task_link searchTask(list * tasks, long unsigned dependencie_number) {
     struct node * current = tasks->first;
 
@@ -39,8 +64,6 @@ task_link searchTask(list * tasks, long unsigned dependencie_number) {
 
 task_link createTask(list * tasks, string buffer) {
     int offset = 0;
-    int ndependencies = 0;
-    long unsigned dependencie;
     struct task * new_task;
 
     new_task = setupTask();
@@ -53,14 +76,7 @@ task_link createTask(list * tasks, string buffer) {
     sscanf(buffer, "%lu%n", &new_task->duration, &offset);
     buffer = buffer + offset;
 
-    while (* buffer != '\n') {
-        new_task->dependencies = realloc(new_task->dependencies, sizeof(task_link)*(ndependencies + 1));
-        sscanf(buffer, "%lu%n", &dependencie, &offset);
-        buffer = buffer + offset;
-        new_task->dependencies[ndependencies] = searchTask(tasks, dependencie);
-        ndependencies ++;
-    }
-    new_task->ndependencies = ndependencies;
+    taskDependencies(tasks, new_task, &buffer);
 
     return new_task;
 }

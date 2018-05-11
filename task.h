@@ -13,8 +13,8 @@ typedef char* string;
 typedef struct node * link;
 
 typedef struct task {
-    unsigned long id, duration, ndependencies;
-    struct task **dependencies;
+    unsigned long id, duration, ndependencies, ndependents;
+    struct task **dependencies, **dependents;
     string description;
 } * task_link;
 
@@ -32,6 +32,7 @@ typedef struct {
 /* ---------- Headers of Functions ---------- */
 task_link setupTask();
 string taskDescription();
+void taskDependencies(list * tasks, task_link new_task, string * buffer);
 task_link searchTask(list * tasks, long unsigned dependencie_number);
 task_link createTask(list * tasks, string buffer);
 
