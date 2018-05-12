@@ -14,6 +14,32 @@ task_link setupTask() {
     return new_task;
 }
 
+void freeTask(task_link task) {
+    free(task->description);
+    free(task->dependencies);
+    free(task->dependents);
+    free(task);
+}
+
+void removeTask(task_link task) {
+    int done;
+    long unsigned i, j;
+    struct task * current;
+
+    for (i = 0; i < task->ndependencies; i++) {
+        done = 0;
+        current = task->dependencies[i];
+        for (j = 0; j < current->ndependents; j++) {
+            if (current->dependents[j] == task) done = 1;
+            else current->dependents[j-done] = current->dependents[j];
+        }
+        current->ndependents --;
+        current->dependents = realloc(current->dependents, sizeof(struct task)*(current->ndependents));
+    }
+
+    freeTask(task);
+}
+
 string taskDescription(string * buffer) {
     string string, beg, end;
 
@@ -39,7 +65,7 @@ void taskDependencies(list * tasks, task_link new_task, string * buffer) {
 
         ndependencies ++;
 
-        searched = searchTask(tasks, dependencie);
+        searched = searchTask(tasks, dependencie)->task;
         new_task->dependencies = realloc(new_task->dependencies, sizeof(struct task)*(ndependencies));
         new_task->dependencies[ndependencies-1] = searched;
         
@@ -51,11 +77,11 @@ void taskDependencies(list * tasks, task_link new_task, string * buffer) {
     new_task->ndependencies = ndependencies;
 }
 
-task_link searchTask(list * tasks, long unsigned dependencie_number) {
+struct node * searchTask(list * tasks, long unsigned dependencie_number) {
     struct node * current = tasks->first;
 
     while (current != NULL) {
-        if (current->task->id == dependencie_number) return current->task;
+        if (current->task->id == dependencie_number) return current;
         current = current->next;
     }
 

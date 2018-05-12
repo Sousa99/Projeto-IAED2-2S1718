@@ -27,6 +27,26 @@ link createNode(task_link new_task) {
     return new_node;
 }
 
+void removeNode(list * tasksList, struct node * searched) {
+    struct node * current = tasksList->first;
+
+    if (tasksList->first == searched) {
+        tasksList->first = searched->next;
+        searched->next->prev = NULL;
+    }
+    else if (tasksList->last == searched) {
+        tasksList->last = searched->prev;
+        searched->prev->next = NULL;
+    }
+    else {
+        while (current != searched) current = current->next;
+        current->prev->next = current->next;
+        current->next->prev = current->prev;
+    }
+
+    free(searched);
+}
+
 /* ---------- Asked Functions ---------- */
 void add(list * tasksList, string buffer) {
     struct task * new_task = createTask(tasksList, buffer);
@@ -71,7 +91,7 @@ void dependents_list(list * tasksList, string buffer) {
 
     sscanf(buffer, "%lu%n", &task_id, &offset);
     buffer = buffer + offset;
-    searched = searchTask(tasksList, task_id);
+    searched = searchTask(tasksList, task_id)->task;
 
     printf("%lu:", searched->id);
     if (searched->ndependents == 0) printf(" no dependencies");
@@ -79,6 +99,22 @@ void dependents_list(list * tasksList, string buffer) {
         for (i = 0; i < searched->ndependents; i++)
             printf(" %lu", searched->dependents[i]->id);
     printf("\n");
+}
+
+void task_remover(list * tasksList, string buffer) {
+    int offset = 0;
+    long unsigned task_id;
+    struct node * searched;
+
+    sscanf(buffer, "%lu%n", &task_id, &offset);
+    buffer = buffer + offset;
+    searched = searchTask(tasksList, task_id);
+
+    if (searched->task->ndependents > 0) printf("task with dependencies\n");
+    else {
+        removeTask(searched->task);
+        removeNode(tasksList, searched);
+    }
 }
 
 /* ---------- Main ---------- */
@@ -113,7 +149,7 @@ int main(int argc, string*argv) {
             dependents_list(tasksList, buffer);
         }
         else if (!strcmp(command, "remove")) {
-            printf("4\n");
+            task_remover(tasksList, buffer);
         }
         else if (!strcmp(command, "path")) {
             printf("5\n");

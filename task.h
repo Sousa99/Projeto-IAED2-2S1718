@@ -31,9 +31,11 @@ typedef struct {
 
 /* ---------- Headers of Functions ---------- */
 task_link setupTask();
+void freeTask(task_link task);
+void removeTask(task_link task);
 string taskDescription();
 void taskDependencies(list * tasks, task_link new_task, string * buffer);
-task_link searchTask(list * tasks, long unsigned dependencie_number);
+struct node * searchTask(list * tasks, long unsigned dependencie_number);
 task_link createTask(list * tasks, string buffer);
 
 #endif
