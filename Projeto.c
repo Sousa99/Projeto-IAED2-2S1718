@@ -28,7 +28,11 @@ link createNode(task_link new_task) {
 void removeNode(list * tasksList, struct node * searched) {
     struct node * current = tasksList->first;
 
-    if (tasksList->first == searched) {
+    if (tasksList->first == tasksList->last) {
+        tasksList->first = NULL;
+        tasksList->last = NULL;
+    }
+    else if (tasksList->first == searched) {
         tasksList->first = searched->next;
         searched->next->prev = NULL;
     }
@@ -56,6 +60,15 @@ list * createList() {
     return tasksList;
 }
 
+void freeAll(list * tasks) {
+    while (tasks->last != NULL) {
+        removeTask(tasks->last->task);
+        removeNode(tasks, tasks->last);
+    }
+
+    free(tasks);
+}
+
 /* ---------- Asked Functions ---------- */
 void add(list * tasksList, string buffer) {
     struct task * new_task = createTask(tasksList, buffer);
@@ -63,7 +76,7 @@ void add(list * tasksList, string buffer) {
 
     tasksList->path = 0;
     tasksList->path_duration = 0;
-    
+
     if (new_task != NULL) {
         new_node = createNode(new_task);
         if (tasksList->first == NULL && tasksList->last == NULL) {
@@ -198,5 +211,7 @@ int main(int argc, string*argv) {
         }
 	
 	} while (strcmp(command, "exit"));
+
+    freeAll(tasksList);
 	return 0;
 }
