@@ -11,7 +11,29 @@ task_link setupTask() {
     new_task->dependents = NULL;
     new_task->ndependencies = 0;
     new_task->ndependents = 0;
+    new_task->early_start = 0;
+    new_task->late_start = 0;
     return new_task;
+}
+
+void showTask(list * tasks, struct task * current) {
+    long unsigned i;
+
+    printf("%lu \"%s\" %lu",
+        current->id, current->description, current->duration);
+
+    if (tasks->path) {
+        printf(" [%lu ", current->early_start);
+        if (current->early_start == current->late_start)
+            printf("CRITICAL]");
+        else printf("%lu]", current->late_start);
+    }
+    
+    for (i = 0; i < current->ndependencies; i++) {
+        printf(" %lu", current->dependencies[i]->id);
+    }
+
+    printf("\n");
 }
 
 void freeTask(task_link task) {
@@ -88,6 +110,36 @@ struct node * searchTask(list * tasks, long unsigned dependencie_number) {
     return NULL;
 }
 
+void setupEarly_Start(task_link task) {
+    long unsigned i;
+    struct task * currentMax;
+    
+    if (task->ndependencies > 0) {
+        currentMax = task->dependencies[0];
+        for (i = 1; i < task->ndependencies; i++)
+            if (currentMax->duration + currentMax->early_start < 
+            task->dependencies[i]->duration + task->dependencies[i]->early_start) 
+                currentMax = task->dependencies[i];
+        
+        task->early_start = currentMax->duration + currentMax->early_start;
+    }
+}
+
+void setupLate_Start(task_link task) {
+    long unsigned i;
+    struct task * currentMax;
+
+    if (task->ndependents == 0) task->late_start = task->early_start;
+    else {
+        currentMax = task->dependents[0];
+        for (i = 1; i < task->ndependents; i++)
+            if (currentMax->late_start > task->dependents[i]->late_start)
+                currentMax = task->dependents[i];
+        
+        task->late_start = currentMax->late_start - task->duration;
+    }
+}
+
 task_link createTask(list * tasks, string buffer) {
     int offset = 0;
     struct task * new_task;
@@ -103,6 +155,8 @@ task_link createTask(list * tasks, string buffer) {
     buffer = buffer + offset;
 
     taskDependencies(tasks, new_task, &buffer);
+
+    setupEarly_Start(new_task);
 
     return new_task;
 }

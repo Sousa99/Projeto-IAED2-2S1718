@@ -64,7 +64,7 @@ void add(list * tasksList, string buffer) {
 }
 
 void duration(list * tasksList, string buffer) {
-    int i, offset = 0;
+    int offset = 0;
     long unsigned threshold = 0;
     struct node * current = tasksList->first;
 
@@ -72,14 +72,9 @@ void duration(list * tasksList, string buffer) {
     buffer = buffer + offset;
 
     while (current != NULL) {
-        if (current->task->duration >= threshold) {
-            printf("%lu \"%s\" %lu",
-                current->task->id, current->task->description, current->task->duration);
-            for (i = 0; i < current->task->ndependencies; i++) {
-                printf(" %lu", current->task->dependencies[i]->id);
-            }
-            printf("\n");
-        }
+        if (current->task->duration >= threshold)
+            showTask(tasksList, current->task);
+        
         current = current->next;
     }
 }
@@ -117,6 +112,29 @@ void task_remover(list * tasksList, string buffer) {
     }
 }
 
+void path(list * tasksList) {
+    long unsigned i;
+    struct node * current = tasksList->last;
+    struct task * task;
+
+    tasksList->path = 1;
+    while (current != NULL) {
+        setupLate_Start(current->task);
+        current = current->prev;
+    }
+
+    task = tasksList->first->task;
+    while (task != tasksList->last->task) {
+        showTask(tasksList, task);
+        for (i = 0; i < task->ndependents; i++)
+            if (task->dependents[i]->early_start == task->dependents[i]->late_start)
+                task = task->dependents[i];
+    }
+
+    showTask(tasksList, task);
+    printf("project duration = %lu\n", task->duration + task->late_start);
+}
+
 /* ---------- Main ---------- */
 int main(int argc, string*argv) {
 	char input[MAXINPUT], command[MAXINPUT];
@@ -127,6 +145,7 @@ int main(int argc, string*argv) {
     tasksList = malloc(sizeof(struct node));
     tasksList->first = NULL;
     tasksList->last = NULL;
+    tasksList->path = 0;
 
     buffer = input;
     offset = 0;
@@ -152,7 +171,7 @@ int main(int argc, string*argv) {
             task_remover(tasksList, buffer);
         }
         else if (!strcmp(command, "path")) {
-            printf("5\n");
+            path(tasksList);
         }
         else if (strcmp(command, "exit")) {
             printf("illegal arguments\n");
