@@ -148,11 +148,11 @@ void setupEarly_Start(task_link task) {
     }
 }
 
-void setupLate_Start(task_link task) {
+void setupLate_Start(task_link task, long unsigned path_duration) {
     long unsigned i;
     struct task * currentMax;
 
-    if (task->ndependents == 0) task->late_start = task->early_start;
+    if (task->ndependents == 0) task->late_start = path_duration - task->duration;
     else {
         currentMax = task->dependents[0];
         for (i = 1; i < task->ndependents; i++)
@@ -160,6 +160,17 @@ void setupLate_Start(task_link task) {
                 currentMax = task->dependents[i];
         
         task->late_start = currentMax->late_start - task->duration;
+    }
+}
+
+void setupPath_duration(list * tasks) {
+    struct node * current = tasks->first;
+    
+    while (current != NULL) {
+        if (current->task->ndependents == 0 &&
+            current->task->duration + current->task->early_start > tasks->path_duration)
+                tasks->path_duration = current->task->duration + current->task->early_start;
+        current = current->next;
     }
 }
 

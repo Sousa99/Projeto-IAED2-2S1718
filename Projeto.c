@@ -48,7 +48,7 @@ void removeNode(list * tasksList, struct node * searched) {
 list * createList() {
     list * tasksList;
 
-    tasksList = malloc(sizeof(struct node));
+    tasksList = malloc(sizeof(list));
     tasksList->first = NULL;
     tasksList->last = NULL;
     tasksList->path = 0;
@@ -61,6 +61,9 @@ void add(list * tasksList, string buffer) {
     struct task * new_task = createTask(tasksList, buffer);
     struct node * new_node;
 
+    tasksList->path = 0;
+    tasksList->path_duration = 0;
+    
     if (new_task != NULL) {
         new_node = createNode(new_task);
         if (tasksList->first == NULL && tasksList->last == NULL) {
@@ -119,6 +122,9 @@ void task_remover(list * tasksList, string buffer) {
     long unsigned task_id;
     struct node * searched;
 
+    tasksList->path = 0;
+    tasksList->path_duration = 0;
+
     sscanf(buffer, "%lu%n", &task_id, &offset);
     buffer = buffer + offset;
     searched = searchTask(tasksList, task_id);
@@ -132,26 +138,24 @@ void task_remover(list * tasksList, string buffer) {
 }
 
 void path(list * tasksList) {
-    long unsigned i;
     struct node * current = tasksList->last;
-    struct task * task;
 
     tasksList->path = 1;
+
+    setupPath_duration(tasksList);
     while (current != NULL) {
-        setupLate_Start(current->task);
+        setupLate_Start(current->task, tasksList->path_duration);
         current = current->prev;
     }
 
-    task = tasksList->first->task;
-    while (task != tasksList->last->task) {
-        showTask(tasksList, task);
-        for (i = 0; i < task->ndependents; i++)
-            if (task->dependents[i]->early_start == task->dependents[i]->late_start)
-                task = task->dependents[i];
+    current = tasksList->first;
+    while (current != NULL) {
+        if (current->task->early_start == current->task->late_start)
+            showTask(tasksList, current->task);
+        current = current->next;
     }
 
-    showTask(tasksList, task);
-    printf("project duration = %lu\n", task->duration + task->late_start);
+    printf("project duration = %lu\n", tasksList->path_duration);
 }
 
 /* ---------- Main ---------- */

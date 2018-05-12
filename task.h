@@ -26,6 +26,7 @@ struct node {
 
 typedef struct {
     int path;
+    long unsigned path_duration;
     link first;  
     link last;  
 } list;
@@ -39,7 +40,8 @@ void showTask(list * tasks, struct task * current);
 string taskDescription();
 int taskDependencies(list * tasks, task_link new_task, string * buffer);
 void setupEarly_Start(task_link task);
-void setupLate_Start(task_link task);
+void setupLate_Start(task_link task, long unsigned path_duration);
+void setupPath_duration(list * tasks);
 struct node * searchTask(list * tasks, long unsigned dependencie_number);
 
 #endif
