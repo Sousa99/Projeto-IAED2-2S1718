@@ -16,24 +16,34 @@ task_link setupTask() {
     return new_task;
 }
 
-void showTask(list * tasks, struct task * current) {
-    long unsigned i;
+task_link createTask(list * tasks, string buffer) {
+    int offset = 0;
+    struct task * new_task;
 
-    printf("%lu \"%s\" %lu",
-        current->id, current->description, current->duration);
+    new_task = setupTask();
 
-    if (tasks->path) {
-        printf(" [%lu ", current->early_start);
-        if (current->early_start == current->late_start)
-            printf("CRITICAL]");
-        else printf("%lu]", current->late_start);
-    }
-    
-    for (i = 0; i < current->ndependencies; i++) {
-        printf(" %lu", current->dependencies[i]->id);
+    sscanf(buffer, "%lu%n", &new_task->id, &offset);
+    buffer = buffer + offset;
+    if (searchTask(tasks, new_task->id) != NULL) {
+        printf("id already exists\n");
+        freeTask(new_task);
+        return NULL;
     }
 
-    printf("\n");
+    new_task->description = taskDescription(&buffer);
+
+    sscanf(buffer, "%lu%n", &new_task->duration, &offset);
+    buffer = buffer + offset;
+
+    if (!taskDependencies(tasks, new_task, &buffer)) {
+        printf("no such task\n");
+        freeTask(new_task);
+        return NULL;
+    }
+
+    setupEarly_Start(new_task);
+
+    return new_task;
 }
 
 void freeTask(task_link task) {
@@ -62,6 +72,26 @@ void removeTask(task_link task) {
     freeTask(task);
 }
 
+void showTask(list * tasks, struct task * current) {
+    long unsigned i;
+
+    printf("%lu \"%s\" %lu",
+        current->id, current->description, current->duration);
+
+    if (tasks->path) {
+        printf(" [%lu ", current->early_start);
+        if (current->early_start == current->late_start)
+            printf("CRITICAL]");
+        else printf("%lu]", current->late_start);
+    }
+    
+    for (i = 0; i < current->ndependencies; i++) {
+        printf(" %lu", current->dependencies[i]->id);
+    }
+
+    printf("\n");
+}
+
 string taskDescription(string * buffer) {
     string string, beg, end;
 
@@ -76,18 +106,21 @@ string taskDescription(string * buffer) {
     return string;
 }
 
-void taskDependencies(list * tasks, task_link new_task, string * buffer) {
+int taskDependencies(list * tasks, task_link new_task, string * buffer) {
     int offset;
     long unsigned ndependencies = 0, dependencie;
     struct task * searched;
+    struct node * tempNode;
 
     while (** buffer != '\n') {
         sscanf(*buffer, "%lu%n", &dependencie, &offset);
         *buffer = *buffer + offset;
+        tempNode = searchTask(tasks, dependencie);
+        
+        if (tempNode == NULL) return 0;
 
+        searched = tempNode->task;
         ndependencies ++;
-
-        searched = searchTask(tasks, dependencie)->task;
         new_task->dependencies = realloc(new_task->dependencies, sizeof(struct task)*(ndependencies));
         new_task->dependencies[ndependencies-1] = searched;
         
@@ -97,17 +130,7 @@ void taskDependencies(list * tasks, task_link new_task, string * buffer) {
 
     }
     new_task->ndependencies = ndependencies;
-}
-
-struct node * searchTask(list * tasks, long unsigned dependencie_number) {
-    struct node * current = tasks->first;
-
-    while (current != NULL) {
-        if (current->task->id == dependencie_number) return current;
-        current = current->next;
-    }
-
-    return NULL;
+    return 1;
 }
 
 void setupEarly_Start(task_link task) {
@@ -140,23 +163,13 @@ void setupLate_Start(task_link task) {
     }
 }
 
-task_link createTask(list * tasks, string buffer) {
-    int offset = 0;
-    struct task * new_task;
+struct node * searchTask(list * tasks, long unsigned id) {
+    struct node * current = tasks->first;
 
-    new_task = setupTask();
+    while (current != NULL) {
+        if (current->task->id == id) return current;
+        current = current->next;
+    }
 
-    sscanf(buffer, "%lu%n", &new_task->id, &offset);
-    buffer = buffer + offset;
-
-    new_task->description = taskDescription(&buffer);
-
-    sscanf(buffer, "%lu%n", &new_task->duration, &offset);
-    buffer = buffer + offset;
-
-    taskDependencies(tasks, new_task, &buffer);
-
-    setupEarly_Start(new_task);
-
-    return new_task;
+    return NULL;
 }

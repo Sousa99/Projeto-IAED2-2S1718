@@ -7,8 +7,6 @@
 /* Define Constants */
 #define MAXINPUT 100000
 #define MAXCOMMAND 9
-#define MAXDESCRIPTION 8001
-#define MAXDEPENDENCIES 10
 
 /* Define Structs */
 
@@ -47,19 +45,33 @@ void removeNode(list * tasksList, struct node * searched) {
     free(searched);
 }
 
+list * createList() {
+    list * tasksList;
+
+    tasksList = malloc(sizeof(struct node));
+    tasksList->first = NULL;
+    tasksList->last = NULL;
+    tasksList->path = 0;
+
+    return tasksList;
+}
+
 /* ---------- Asked Functions ---------- */
 void add(list * tasksList, string buffer) {
     struct task * new_task = createTask(tasksList, buffer);
-    struct node * new_node = createNode(new_task);
+    struct node * new_node;
 
-    if (tasksList->first == NULL && tasksList->last == NULL) {
-        tasksList->first = new_node;
-        tasksList->last = new_node;
-    }
-    else {
-        new_node->prev = tasksList->last;
-        tasksList->last->next = new_node;
-        tasksList->last = new_node;
+    if (new_task != NULL) {
+        new_node = createNode(new_task);
+        if (tasksList->first == NULL && tasksList->last == NULL) {
+            tasksList->first = new_node;
+            tasksList->last = new_node;
+        }
+        else {
+            new_node->prev = tasksList->last;
+            tasksList->last->next = new_node;
+            tasksList->last = new_node;
+        }
     }
 }
 
@@ -83,17 +95,23 @@ void dependents_list(list * tasksList, string buffer) {
     int offset = 0;
     long unsigned i, task_id;
     struct task * searched;
+    struct node * tempNode;
 
     sscanf(buffer, "%lu%n", &task_id, &offset);
     buffer = buffer + offset;
-    searched = searchTask(tasksList, task_id)->task;
 
-    printf("%lu:", searched->id);
-    if (searched->ndependents == 0) printf(" no dependencies");
-    else
-        for (i = 0; i < searched->ndependents; i++)
-            printf(" %lu", searched->dependents[i]->id);
-    printf("\n");
+    tempNode = searchTask(tasksList, task_id);
+
+    if (tempNode == NULL) printf("no such task\n");
+    else {
+        searched = tempNode->task;
+        printf("%lu:", searched->id);
+        if (searched->ndependents == 0) printf(" no dependencies");
+        else
+            for (i = 0; i < searched->ndependents; i++)
+                printf(" %lu", searched->dependents[i]->id);
+        printf("\n");
+    }
 }
 
 void task_remover(list * tasksList, string buffer) {
@@ -105,7 +123,8 @@ void task_remover(list * tasksList, string buffer) {
     buffer = buffer + offset;
     searched = searchTask(tasksList, task_id);
 
-    if (searched->task->ndependents > 0) printf("task with dependencies\n");
+    if (searched == NULL) printf("no such task\n");
+    else if (searched->task->ndependents > 0) printf("task with dependencies\n");
     else {
         removeTask(searched->task);
         removeNode(tasksList, searched);
@@ -137,15 +156,12 @@ void path(list * tasksList) {
 
 /* ---------- Main ---------- */
 int main(int argc, string*argv) {
-	char input[MAXINPUT], command[MAXINPUT];
-    string buffer;
     int offset;
-
+    string buffer;
+	char input[MAXINPUT], command[MAXINPUT];
     list * tasksList;
-    tasksList = malloc(sizeof(struct node));
-    tasksList->first = NULL;
-    tasksList->last = NULL;
-    tasksList->path = 0;
+
+    tasksList = createList();
 
     buffer = input;
     offset = 0;
@@ -176,8 +192,6 @@ int main(int argc, string*argv) {
         else if (strcmp(command, "exit")) {
             printf("illegal arguments\n");
         }
-
-
 	
 	} while (strcmp(command, "exit"));
 	return 0;
