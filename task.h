@@ -6,7 +6,6 @@
 
 /* Define Constants */
 #define _TASK_HEADER_
-#define MAXDEPENDENCIES 10
 
 /* Define Structs */
 typedef char* string;

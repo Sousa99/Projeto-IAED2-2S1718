@@ -31,6 +31,11 @@ task_link createTask(list * tasks, string buffer) {
     }
 
     new_task->description = taskDescription(&buffer);
+    if (new_task->description == NULL) {
+        printf("illegal arguments\n");
+        freeTask(new_task);
+        return NULL;
+    }
 
     sscanf(buffer, "%lu%n", &new_task->duration, &offset);
     buffer = buffer + offset;
@@ -42,7 +47,6 @@ task_link createTask(list * tasks, string buffer) {
     }
 
     if (!taskDependencies(tasks, new_task, &buffer)) {
-        printf("no such task\n");
         freeTask(new_task);
         return NULL;
     }
@@ -101,8 +105,12 @@ void showTask(list * tasks, struct task * current) {
 string taskDescription(string * buffer) {
     string string, beg, end;
 
-    beg = strstr(*buffer, "\"") + 1;
+    beg = strstr(*buffer, "\"");
+    if (beg == NULL) return NULL;
+    beg ++;
+
     end = strstr(beg, "\"");
+    if (end == NULL) return NULL;
     *end = '\0';
 
     *buffer = end + 1;
@@ -120,11 +128,20 @@ int taskDependencies(list * tasks, task_link new_task, string * buffer) {
     struct node * tempNode;
 
     while (** buffer != '\n') {
+        dependencie = 0;
         sscanf(*buffer, "%lu%n", &dependencie, &offset);
+        if (dependencie == 0) {
+            printf("illegal arguments\n");
+            return 0;
+        }
+
         *buffer = *buffer + offset;
         tempNode = searchTask(tasks, dependencie);
         
-        if (tempNode == NULL) return 0;
+        if (tempNode == NULL) {
+            printf("no such task\n");
+            return 0;
+        }
 
         searched = tempNode->task;
         ndependencies ++;
@@ -157,16 +174,16 @@ void setupEarly_Start(task_link task) {
 
 void setupLate_Start(task_link task, long unsigned path_duration) {
     long unsigned i;
-    struct task * currentMax;
+    struct task * currentMin;
 
     if (task->ndependents == 0) task->late_start = path_duration - task->duration;
     else {
-        currentMax = task->dependents[0];
+        currentMin = task->dependents[0];
         for (i = 1; i < task->ndependents; i++)
-            if (currentMax->late_start > task->dependents[i]->late_start)
-                currentMax = task->dependents[i];
+            if (currentMin->late_start > task->dependents[i]->late_start)
+                currentMin = task->dependents[i];
         
-        task->late_start = currentMax->late_start - task->duration;
+        task->late_start = currentMin->late_start - task->duration;
     }
 }
 
