@@ -74,10 +74,10 @@ void add(list * tasksList, string buffer) {
     struct task * new_task = createTask(tasksList, buffer);
     struct node * new_node;
 
-    tasksList->path = 0;
-    tasksList->path_duration = 0;
-
     if (new_task != NULL) {
+        tasksList->path = 0;
+        tasksList->path_duration = 0;
+
         new_node = createNode(new_task);
         if (tasksList->first == NULL && tasksList->last == NULL) {
             tasksList->first = new_node;
@@ -135,9 +135,6 @@ void task_remover(list * tasksList, string buffer) {
     long unsigned task_id;
     struct node * searched;
 
-    tasksList->path = 0;
-    tasksList->path_duration = 0;
-
     sscanf(buffer, "%lu%n", &task_id, &offset);
     buffer = buffer + offset;
     searched = searchTask(tasksList, task_id);
@@ -145,6 +142,9 @@ void task_remover(list * tasksList, string buffer) {
     if (searched == NULL) printf("no such task\n");
     else if (searched->task->ndependents > 0) printf("task with dependencies\n");
     else {
+        tasksList->path = 0;
+        tasksList->path_duration = 0;
+
         removeTask(searched->task);
         removeNode(tasksList, searched);
     }
