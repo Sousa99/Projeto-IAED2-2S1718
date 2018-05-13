@@ -35,6 +35,12 @@ task_link createTask(list * tasks, string buffer) {
     sscanf(buffer, "%lu%n", &new_task->duration, &offset);
     buffer = buffer + offset;
 
+    if (new_task->id == 0 || new_task->duration == 0) {
+        printf("illegal arguments\n");
+        freeTask(new_task);
+        return NULL;
+    }
+
     if (!taskDependencies(tasks, new_task, &buffer)) {
         printf("no such task\n");
         freeTask(new_task);
@@ -97,11 +103,12 @@ string taskDescription(string * buffer) {
 
     beg = strstr(*buffer, "\"") + 1;
     end = strstr(beg, "\"");
+    *end = '\0';
+
     *buffer = end + 1;
     
-    string = malloc(sizeof(char) * ((* buffer)-beg));
+    string = malloc(sizeof(char) * (end - beg + 1));
     strcpy(string, beg);
-    *(string + (end - beg)) = '\0';
     
     return string;
 }
