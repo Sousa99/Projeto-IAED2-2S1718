@@ -122,12 +122,13 @@ string taskDescription(string * buffer) {
 }
 
 int taskDependencies(list * tasks, task_link new_task, string * buffer) {
-    int offset;
-    long unsigned ndependencies = 0, dependencie;
+    int offset, already_exists;
+    long unsigned i, ndependencies = 0, dependencie;
     struct task * searched;
     struct node * tempNode;
 
     while (** buffer != '\n') {
+        already_exists = 0;
         dependencie = 0;
         sscanf(*buffer, "%lu%n", &dependencie, &offset);
         if (dependencie == 0) {
@@ -143,14 +144,20 @@ int taskDependencies(list * tasks, task_link new_task, string * buffer) {
             return 0;
         }
 
-        searched = tempNode->task;
-        ndependencies ++;
-        new_task->dependencies = realloc(new_task->dependencies, sizeof(struct task)*(ndependencies));
-        new_task->dependencies[ndependencies-1] = searched;
-        
-        searched->ndependents ++;
-        searched->dependents = realloc(searched->dependents, sizeof(struct task)*(searched->ndependents));
-        searched->dependents[searched->ndependents - 1] = new_task;
+        for (i = 0; i < ndependencies; i++) {
+            if (new_task->dependencies[i]->id == dependencie) already_exists = 1;
+        }
+
+        if (!already_exists) {
+            searched = tempNode->task;
+            ndependencies ++;
+            new_task->dependencies = realloc(new_task->dependencies, sizeof(struct task)*(ndependencies));
+            new_task->dependencies[ndependencies-1] = searched;
+            
+            searched->ndependents ++;
+            searched->dependents = realloc(searched->dependents, sizeof(struct task)*(searched->ndependents));
+            searched->dependents[searched->ndependents - 1] = new_task;
+        }
 
     }
     new_task->ndependencies = ndependencies;
