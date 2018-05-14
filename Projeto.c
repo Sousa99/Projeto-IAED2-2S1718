@@ -7,7 +7,6 @@
 
 /* Define Constants */
 #define MAXINPUT 100000
-#define MAXCOMMAND 9
 
 /* Define Structs */
 
@@ -15,7 +14,19 @@
 
 
 /* ---------- Complementary Functions ---------- */
+void getinput(string * buffer){
+    int contador = 1;
 
+    *buffer = malloc(sizeof(char) * MAXINPUT);
+    fgets(*buffer, MAXINPUT, stdin);
+    while (strstr(*buffer, "\n") == NULL) {
+        contador ++;
+        *buffer = realloc(*buffer, contador * sizeof(char) * MAXINPUT);
+        fgets(*buffer, MAXINPUT, stdin);
+    }
+
+
+}
 /* ---------- Asked Functions ---------- */
 void add(list * tasksList, string buffer) {
     struct task * new_task = createTask(tasksList, buffer);
@@ -121,18 +132,13 @@ void path(list * tasksList) {
 
 /* ---------- Main ---------- */
 int main(int argc, string*argv) {
-    int offset;
+    int offset = 0;
     string buffer;
-	char input[MAXINPUT], command[MAXINPUT];
+	char command[MAXINPUT];
     list * tasksList = createList();
 
-    buffer = input;
-    offset = 0;
-
-    *buffer = '\n';
 	do {
-        fgets(input, MAXINPUT, stdin);
-        buffer = input;
+        getinput(&buffer);
 
         sscanf(buffer, "%s%n", command, &offset);
         buffer = buffer + offset;
