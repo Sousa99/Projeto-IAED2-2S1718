@@ -1,4 +1,5 @@
 #include "task.h"
+#include "btree.h"
 
 task_link setupTask() {
     struct task * new_task;
@@ -24,7 +25,7 @@ task_link createTask(list * tasks, string buffer) {
 
     sscanf(buffer, "%lu%n", &new_task->id, &offset);
     buffer = buffer + offset;
-    if (searchTask(tasks, new_task->id) != NULL) {
+    if (STsearch(tasks->head, new_task->id) != NULL) {
         printf("id already exists\n");
         freeTask(new_task);
         return NULL;
@@ -137,7 +138,7 @@ int taskDependencies(list * tasks, task_link new_task, string * buffer) {
         }
 
         *buffer = *buffer + offset;
-        tempNode = searchTask(tasks, dependencie);
+        tempNode = STsearch(tasks->head, dependencie);
         
         if (tempNode == NULL) {
             printf("no such task\n");
@@ -203,15 +204,4 @@ void setupPath_duration(list * tasks) {
                 tasks->path_duration = current->task->duration + current->task->early_start;
         current = current->next;
     }
-}
-
-struct node * searchTask(list * tasks, long unsigned id) {
-    struct node * current = tasks->first;
-
-    while (current != NULL) {
-        if (current->task->id == id) return current;
-        current = current->next;
-    }
-
-    return NULL;
 }

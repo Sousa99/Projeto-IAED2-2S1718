@@ -6,7 +6,7 @@ link_b max(link_b h) {
 }
 
 link_b NEW(Item item, link_b l, link_b r) {
-    link_b x = (link_b)malloc(sizeof(struct node));
+    link_b x = (link_b)malloc(sizeof(struct node_b));
     x->item = item;
     x->l = l;
     x->r = r;

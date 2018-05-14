@@ -1,4 +1,5 @@
 #include "lists.h"
+#include "btree.h"
 
 link createNode(task_link new_task) {
     struct node * new_node;
@@ -39,6 +40,7 @@ list * createList() {
     list * tasksList;
 
     tasksList = malloc(sizeof(list));
+    STinit(&tasksList->head);
     tasksList->first = NULL;
     tasksList->last = NULL;
     tasksList->path = 0;
@@ -48,6 +50,7 @@ list * createList() {
 
 void freeAll(list * tasks) {
     while (tasks->last != NULL) {
+        STdelete(&tasks->head, tasks->last->task->id);
         removeTask(tasks->last->task);
         removeNode(tasks, tasks->last);
     }

@@ -38,6 +38,7 @@ void add(list * tasksList, string buffer) {
         tasksList->path_duration = 0;
 
         new_node = createNode(new_task);
+        STinsert(&tasksList->head, new_node);
         if (tasksList->first == NULL && tasksList->last == NULL) {
             tasksList->first = new_node;
             tasksList->last = new_node;
@@ -76,7 +77,7 @@ void dependents_list(list * tasksList, string buffer) {
     sscanf(buffer, "%lu%n", &task_id, &offset);
     buffer = buffer + offset;
 
-    tempNode = searchTask(tasksList, task_id);
+    tempNode = STsearch(tasksList->head, task_id);
 
     if (tempNode == NULL) printf("no such task\n");
     else {
@@ -97,7 +98,7 @@ void task_remover(list * tasksList, string buffer) {
 
     sscanf(buffer, "%lu%n", &task_id, &offset);
     buffer = buffer + offset;
-    searched = searchTask(tasksList, task_id);
+    searched = STsearch(tasksList->head, task_id);
 
     if (searched == NULL) printf("no such task\n");
     else if (searched->task->ndependents > 0) printf("task with dependencies\n");
@@ -105,6 +106,7 @@ void task_remover(list * tasksList, string buffer) {
         tasksList->path = 0;
         tasksList->path_duration = 0;
 
+        STdelete(&tasksList->head, searched->task->id);
         removeTask(searched->task);
         removeNode(tasksList, searched);
     }
@@ -134,12 +136,13 @@ void path(list * tasksList) {
 /* ---------- Main ---------- */
 int main(int argc, string*argv) {
     int offset = 0;
-    string buffer;
+    string buffer, free_buffer;
 	char command[MAXINPUT];
     list * tasksList = createList();
 
 	do {
         getinput(&buffer);
+        free_buffer = buffer;
 
         sscanf(buffer, "%s%n", command, &offset);
         buffer = buffer + offset;
@@ -162,6 +165,8 @@ int main(int argc, string*argv) {
         else if (strcmp(command, "exit")) {
             printf("illegal arguments\n");
         }
+
+        free(free_buffer);
 	
 	} while (strcmp(command, "exit"));
 

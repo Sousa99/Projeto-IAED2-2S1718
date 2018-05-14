@@ -5,48 +5,48 @@ user    0m0.000s
 sys     0m0.000s
 
 Running test02.in
-real    0m0.023s
+real    0m0.034s
 user    0m0.000s
 sys     0m0.000s
 
 Running test03.in
-real    0m0.025s
+real    0m0.031s
 user    0m0.000s
-sys     0m0.000s
-
-Running test04.in
-real    0m0.025s
-user    0m0.000s
-sys     0m0.000s
-
-Running test05.in
-real    0m0.022s
-user    0m0.016s
-sys     0m0.00s
-
-Running test06.in
-real    0m3.794s
-user    0m3.750s
 sys     0m0.016s
 
+Running test04.in
+real    0m0.032s
+user    0m0.000s
+sys     0m0.016s
+
+Running test05.in
+real    0m0.033s
+user    0m0.016s
+sys     0m0.016s
+
+Running test06.in
+real    0m6.955s
+user    0m0.703s
+sys     0m0.031s
+
 Running test07.in
-real    0m3.916s
-user    0m3.781s
-sys     0m0.094s
+real    0m2.747s
+user    0m2.453s
+sys     0m0.156s
 
 Running test08.in
-real    0m3.806s
-user    0m3.594s
-sys     0m0.125s
+real    0m3.122s
+user    0m2.844s
+sys     0m0.063s
 
 Running test09.in
-real    0m18.956s
-user    0m18.609s
-sys     0m0.141s
+real    0m0.790s
+user    0m0.625s
+sys     0m0.016s
 Files test09.out and test09.mine.out differ
 
 Running test10.in
-real    0m18.026s
-user    0m17.203s
-sys     0m0.109s
+real    0m0.624s
+user    0m0.500s
+sys     0m0.031s
 Files test10.out and test10.mine.out differ
