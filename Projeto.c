@@ -43,15 +43,16 @@ void duration(list * tasksList, string buffer) {
     long unsigned threshold = 0;
     struct node * current = tasksList->first;
 
-    sscanf(buffer, "%lu%n", &threshold, &offset);
-    buffer = buffer + offset;
-
-    while (current != NULL) {
-        if (current->task->duration >= threshold)
-            showTask(tasksList, current->task);
-        
-        current = current->next;
+    if (sscanf(buffer, "%lu%n", &threshold, &offset) == EOF || threshold != 0) {
+        buffer = buffer + offset;
+        while (current != NULL) {
+            if (current->task->duration >= threshold)
+                showTask(tasksList, current->task);
+            
+            current = current->next;
+        }
     }
+    else printf("illegal arguments\n");
 }
 
 void dependents_list(list * tasksList, string buffer) {
@@ -123,9 +124,7 @@ int main(int argc, string*argv) {
     int offset;
     string buffer;
 	char input[MAXINPUT], command[MAXINPUT];
-    list * tasksList;
-
-    tasksList = createList();
+    list * tasksList = createList();
 
     buffer = input;
     offset = 0;

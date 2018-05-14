@@ -10,6 +10,7 @@
 /* Define Structs */
 typedef char* string;
 typedef struct node * link;
+typedef struct node_b * link_b;
 
 typedef struct task {
     unsigned long id, duration, ndependencies, ndependents, early_start, late_start;
@@ -19,15 +20,19 @@ typedef struct task {
 
 struct node {
     task_link task;
-    link next;
-    link prev;
+    link next, prev;
+};
+struct node_b {
+    link item;
+    link_b r, l;
+    int height;
 };
 
 typedef struct {
     int path;
     long unsigned path_duration;
-    link first;  
-    link last;  
+    link first, last;
+    link_b head;
 } list;
 
 /* ---------- Headers of Functions ---------- */
