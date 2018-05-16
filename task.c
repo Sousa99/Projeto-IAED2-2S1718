@@ -10,8 +10,6 @@ task_link setupTask() {
     new_task->duration = 0;
     new_task->dependencies = NULL;
     new_task->dependents = NULL;
-    new_task->ndependencies = 0;
-    new_task->ndependents = 0;
     new_task->early_start = 0;
     new_task->late_start = 0;
     return new_task;
@@ -59,32 +57,42 @@ task_link createTask(list * tasks, string buffer) {
 
 void freeTask(task_link task) {
     free(task->description);
-    free(task->dependencies);
-    free(task->dependents);
     free(task);
 }
 
 void removeTask(task_link task) {
-    int done;
-    long unsigned i, j;
-    struct task * current;
+    simpleList current_main, current_sub, temp;
 
-    for (i = 0; i < task->ndependencies; i++) {
-        done = 0;
-        current = task->dependencies[i];
-        for (j = 0; j < current->ndependents; j++) {
-            if (current->dependents[j] == task) done = 1;
-            else current->dependents[j-done] = current->dependents[j];
+    current_main = task->dependencies;
+    while (current_main != NULL) {
+        current_sub = current_main->task->dependents;
+        if (current_sub->next == NULL) {
+            free(current_sub);
+            current_main->task->dependents = NULL;
         }
-        current->ndependents --;
-        current->dependents = realloc(current->dependents, sizeof(struct task)*(current->ndependents));
+        else if (current_sub->task == task) {
+            temp = current_sub;
+            current_main->task->dependents = current_sub->next;
+            free(temp);
+        }
+        else {
+            while (current_sub->next->task != task)
+                current_sub = current_sub->next;
+            temp = current_sub->next;
+            current_sub->next = current_sub->next->next;
+            free(temp);
+        }
+        
+        temp = current_main;
+        current_main = current_main->next;
+        free(temp);
     }
 
     freeTask(task);
 }
 
 void showTask(list * tasks, struct task * current) {
-    long unsigned i;
+    simpleList current_dependencies;
 
     printf("%lu \"%s\" %lu",
         current->id, current->description, current->duration);
@@ -96,8 +104,10 @@ void showTask(list * tasks, struct task * current) {
         else printf("%lu]", current->late_start);
     }
     
-    for (i = 0; i < current->ndependencies; i++) {
-        printf(" %lu", current->dependencies[i]->id);
+    current_dependencies = current->dependencies;
+    while (current_dependencies != NULL) {
+        printf(" %lu", current_dependencies->task->id);
+        current_dependencies = current_dependencies->next;
     }
 
     printf("\n");
@@ -124,9 +134,10 @@ string taskDescription(string * buffer) {
 
 int taskDependencies(list * tasks, task_link new_task, string * buffer) {
     int offset, already_exists;
-    long unsigned i, ndependencies = 0, dependencie;
+    long unsigned dependencie;
     struct task * searched;
     struct node * tempNode;
+    simpleList current, new_dependencie, new_dependent;
 
     while (** buffer != '\n') {
         already_exists = 0;
@@ -145,51 +156,72 @@ int taskDependencies(list * tasks, task_link new_task, string * buffer) {
             return 0;
         }
 
-        for (i = 0; i < ndependencies; i++) {
-            if (new_task->dependencies[i]->id == dependencie) already_exists = 1;
+        current = new_task->dependencies;
+        while (current != NULL) {
+            if (current->task->id == dependencie) already_exists = 1;
+            current = current->next;
         }
 
         if (!already_exists) {
             searched = tempNode->task;
-            ndependencies ++;
-            new_task->dependencies = realloc(new_task->dependencies, sizeof(struct task)*(ndependencies));
-            new_task->dependencies[ndependencies-1] = searched;
-            
-            searched->ndependents ++;
-            searched->dependents = realloc(searched->dependents, sizeof(struct task)*(searched->ndependents));
-            searched->dependents[searched->ndependents - 1] = new_task;
-        }
 
+            new_dependencie = malloc(sizeof(struct simpleList));
+            new_dependencie->task = searched;
+            new_dependencie->next = NULL;
+
+            if (new_task->dependencies == NULL) new_task->dependencies = new_dependencie;
+            else {
+                current = new_task->dependencies;
+                while (current->next != NULL) current = current->next;
+                current->next = new_dependencie;
+            }
+            
+            new_dependent = malloc(sizeof(struct simpleList));
+            new_dependent->task = new_task;
+            new_dependent->next = NULL;
+
+            if (searched->dependents == NULL) searched->dependents = new_dependent;
+            else {
+                current = searched->dependents;
+                while (current->next != NULL) current = current->next;
+                current->next = new_dependent;
+            }
+        }
     }
-    new_task->ndependencies = ndependencies;
+
     return 1;
 }
 
 void setupEarly_Start(task_link task) {
-    long unsigned i;
-    struct task * currentMax;
+    task_link currentMax;
+    simpleList current;
     
-    if (task->ndependencies > 0) {
-        currentMax = task->dependencies[0];
-        for (i = 1; i < task->ndependencies; i++)
+    if (task->dependencies != NULL) {
+        currentMax = task->dependencies->task;
+        current = task->dependencies;
+        while (current != NULL) {
             if (currentMax->duration + currentMax->early_start < 
-            task->dependencies[i]->duration + task->dependencies[i]->early_start) 
-                currentMax = task->dependencies[i];
-        
+            current->task->duration + current->task->early_start) 
+                currentMax = current->task;
+            current = current->next;
+        }
         task->early_start = currentMax->duration + currentMax->early_start;
     }
 }
 
 void setupLate_Start(task_link task, long unsigned path_duration) {
-    long unsigned i;
-    struct task * currentMin;
+    task_link currentMin;
+    simpleList current;
 
-    if (task->ndependents == 0) task->late_start = path_duration - task->duration;
+    if (task->dependents == NULL) task->late_start = path_duration - task->duration;
     else {
-        currentMin = task->dependents[0];
-        for (i = 1; i < task->ndependents; i++)
-            if (currentMin->late_start > task->dependents[i]->late_start)
-                currentMin = task->dependents[i];
+        currentMin = task->dependents->task;
+        current = task->dependents;
+        while (current != NULL) {
+            if (currentMin->late_start > current->task->late_start)
+                currentMin = current->task;
+            current = current->next;
+        }
         
         task->late_start = currentMin->late_start - task->duration;
     }
@@ -199,7 +231,7 @@ void setupPath_duration(list * tasks) {
     struct node * current = tasks->first;
     
     while (current != NULL) {
-        if (current->task->ndependents == 0 &&
+        if (current->task->dependents == NULL &&
             current->task->duration + current->task->early_start > tasks->path_duration)
                 tasks->path_duration = current->task->duration + current->task->early_start;
         current = current->next;

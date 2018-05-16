@@ -9,14 +9,21 @@
 
 /* Define Structs */
 typedef char* string;
+typedef struct task * task_link;
 typedef struct node * link;
 typedef struct node_b * link_b;
+typedef struct simpleList * simpleList;
 
-typedef struct task {
-    unsigned long id, duration, ndependencies, ndependents, early_start, late_start;
-    struct task **dependencies, **dependents;
+struct simpleList{
+    task_link task;
+    simpleList next;
+};
+
+struct task {
+    unsigned long id, duration, early_start, late_start;
+    simpleList dependencies, dependents;
     string description;
-} * task_link;
+};
 
 struct node {
     task_link task;

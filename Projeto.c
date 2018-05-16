@@ -64,7 +64,6 @@ void duration(list * tasksList, string buffer) {
         while (current != NULL) {
             if (current->task->duration >= threshold)
                 showTask(tasksList, current->task);
-            
             current = current->next;
         }
     }
@@ -73,23 +72,27 @@ void duration(list * tasksList, string buffer) {
 
 void dependents_list(list * tasksList, string buffer) {
     int offset = 0;
-    long unsigned i, task_id;
-    struct task * searched;
-    struct node * tempNode;
+    long unsigned task_id;
+    task_link searched;
+    link tempNode;
+    simpleList current;
 
     sscanf(buffer, "%lu%n", &task_id, &offset);
     buffer = buffer + offset;
 
     tempNode = STsearch(tasksList->head, task_id);
-
     if (tempNode == NULL) printf("no such task\n");
     else {
         searched = tempNode->task;
         printf("%lu:", searched->id);
-        if (searched->ndependents == 0) printf(" no dependencies");
-        else
-            for (i = 0; i < searched->ndependents; i++)
-                printf(" %lu", searched->dependents[i]->id);
+        if (searched->dependents == NULL) printf(" no dependencies");
+        else {
+            current = searched->dependents;
+            while (current != NULL) {
+                printf(" %lu", current->task->id);
+                current = current->next;
+            }
+        }
         printf("\n");
     }
 }
@@ -104,7 +107,7 @@ void task_remover(list * tasksList, string buffer) {
     searched = STsearch(tasksList->head, task_id);
 
     if (searched == NULL) printf("no such task\n");
-    else if (searched->task->ndependents > 0) printf("task with dependencies\n");
+    else if (searched->task->dependents != NULL) printf("task with dependencies\n");
     else {
         tasksList->path = 0;
         tasksList->path_duration = 0;
