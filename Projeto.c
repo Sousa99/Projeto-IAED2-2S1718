@@ -7,7 +7,7 @@
 #include "btree.h"
 
 /* Define Constants */
-#define MAXINPUT 100000
+#define MAXINPUT 1000
 
 /* Define Structs */
 
@@ -15,19 +15,22 @@
 
 
 /* ---------- Complementary Functions ---------- */
-void getinput(string * buffer){
-    int contador = 1;
 
-    *buffer = malloc(sizeof(char) * MAXINPUT);
-    fgets(*buffer, MAXINPUT, stdin);
-    while (strstr(*buffer, "\n") == NULL) {
-        contador ++;
-        *buffer = realloc(*buffer, contador * sizeof(char) * MAXINPUT);
-        fgets(*buffer, MAXINPUT, stdin);
-    }
+string getinput() {
+    size_t size = 0;
+    size_t len = 0;
+    string buffer = NULL;
 
+    do {
+        size += MAXINPUT;
+        buffer = realloc(buffer, size);
+        fgets(buffer + len, size - len - 2, stdin);
+        len = strlen(buffer);
+    } while (!feof(stdin) && buffer[len - 1] != '\n');
 
+    return buffer;
 }
+
 /* ---------- Asked Functions ---------- */
 void add(list * tasksList, string buffer) {
     struct task * new_task = createTask(tasksList, buffer);
@@ -136,16 +139,15 @@ void path(list * tasksList) {
 /* ---------- Main ---------- */
 int main(int argc, string*argv) {
     int offset = 0;
-    string buffer, free_buffer;
+    string buffer;
 	char command[MAXINPUT];
     list * tasksList = createList();
 
 	do {
-        getinput(&buffer);
-        free_buffer = buffer;
+        buffer = getinput();
 
         sscanf(buffer, "%s%n", command, &offset);
-        buffer = buffer + offset;
+        buffer += offset;
 
         if (!strcmp(command, "add")) {
             add(tasksList, buffer);
@@ -166,7 +168,8 @@ int main(int argc, string*argv) {
             printf("illegal arguments\n");
         }
 
-        free(free_buffer);
+        buffer -= offset;
+        free(buffer);
 	
 	} while (strcmp(command, "exit"));
 
