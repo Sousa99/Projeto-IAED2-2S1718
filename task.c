@@ -301,22 +301,19 @@ void setupEarly_Start(task_link task) {
  *  Calculates and stores late start of task in task
  */
 void setupLate_Start(task_link task, long unsigned path_duration) {
-    task_link currentMin;
     simpleList current;
 
     /* If task doesn't have dependents late start is path duration less its duration */
     if (task->dependents == NULL) task->late_start = path_duration - task->duration;
     else {
-        currentMin = task->dependents->task;
+        task->late_start = task->dependents->task->late_start - task->duration;
         current = task->dependents;
         /* Find dependent with minimum late start */
         while (current != NULL) {
-            if (currentMin->late_start > current->task->late_start)
-                currentMin = current->task;
+            if (task->late_start > current->task->late_start - task->duration)
+                task->late_start = current->task->late_start - task->duration;
             current = current->next;
         }
-        
-        task->late_start = currentMin->late_start - task->duration;
     }
 }
 

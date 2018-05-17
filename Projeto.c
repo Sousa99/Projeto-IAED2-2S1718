@@ -131,24 +131,28 @@ void dependents_list(link_list tasksList, string buffer) {
     /* Get the id from buffer of the task */
     sscanf(buffer, "%lu%n", &task_id, &offset);
     buffer = buffer + offset;
-    /* Search for the task in Binary Tree */
-    tempNode = STsearch(tasksList->head, task_id);
 
-    /* If task isn't stored */
-    if (tempNode == NULL) printf("no such task\n");
+    if (task_id == 0) printf("illegal arguments\n");
     else {
-        /* Effectively prints the id's of all tasks that depend on the one given */
-        searched = tempNode->task;
-        printf("%lu:", searched->id);
-        if (searched->dependents == NULL) printf(" no dependencies");
+        /* Search for the task in Binary Tree */
+        tempNode = STsearch(tasksList->head, task_id);
+
+        /* If task isn't stored */
+        if (tempNode == NULL) printf("no such task\n");
         else {
-            current = searched->dependents;
-            while (current != NULL) {
-                printf(" %lu", current->task->id);
-                current = current->next;
+            /* Effectively prints the id's of all tasks that depend on the one given */
+            searched = tempNode->task;
+            printf("%lu:", searched->id);
+            if (searched->dependents == NULL) printf(" no dependencies");
+            else {
+                current = searched->dependents;
+                while (current != NULL) {
+                    printf(" %lu", current->task->id);
+                    current = current->next;
+                }
             }
+            printf("\n");
         }
-        printf("\n");
     }
 }
 
@@ -165,22 +169,26 @@ void task_remover(link_list tasksList, string buffer) {
     /* Get the id from buffer of the task wished to be removed */
     sscanf(buffer, "%lu%n", &task_id, &offset);
     buffer = buffer + offset;
-    /* Search for the task in Binary Tree */
-    searched = STsearch(tasksList->head, task_id);
 
-    /* If task isn't stored */
-    if (searched == NULL) printf("no such task\n");
-    /* In case task has dependencies (means it can't be removed) */
-    else if (searched->task->dependents != NULL) printf("task with dependencies\n");
+    if (task_id == 0) printf("illegal arguments\n");
     else {
-        /* Previously found path is no longer valid */
-        tasksList->path = 0;
-        tasksList->path_duration = 0;
+        /* Search for the task in Binary Tree */
+        searched = STsearch(tasksList->head, task_id);
 
-        /* Effectively remove task, meaning components, nodes that store it and lists */
-        STdelete(&tasksList->head, searched->task->id);
-        removeTask(searched->task);
-        removeNode(tasksList, searched);
+        /* If task isn't stored */
+        if (searched == NULL) printf("no such task\n");
+        /* In case task has dependencies (means it can't be removed) */
+        else if (searched->task->dependents != NULL) printf("task with dependencies\n");
+        else {
+            /* Previously found path is no longer valid */
+            tasksList->path = 0;
+            tasksList->path_duration = 0;
+
+            /* Effectively remove task, meaning components, nodes that store it and lists */
+            STdelete(&tasksList->head, searched->task->id);
+            removeTask(searched->task);
+            removeNode(tasksList, searched);
+        }
     }
 }
 
@@ -191,16 +199,18 @@ void task_remover(link_list tasksList, string buffer) {
 void path(link_list tasksList) {
     link current;
 
-    /* If duration is called next early and late start will be represented */
-    tasksList->path = 1;
-    /* Get path duration and store it in tasksList->path_duration */
-    setupPath_duration(tasksList);
+    if (tasksList->path == 0) {
+        /* If duration is called next early and late start will be represented */
+        tasksList->path = 1;
+        /* Get path duration and store it in tasksList->path_duration */
+        setupPath_duration(tasksList);
 
-    /* For each of the tasks stored in tasksList calculate and store late start */
-    current = tasksList->last;
-    while (current != NULL) {
-        setupLate_Start(current->task, tasksList->path_duration);
-        current = current->prev;
+        /* For each of the tasks stored in tasksList calculate and store late start */
+        current = tasksList->last;
+        while (current != NULL) {
+            setupLate_Start(current->task, tasksList->path_duration);
+            current = current->prev;
+        }
     }
 
     /* Follow critical path and print it out starting at the beggining of List*/
