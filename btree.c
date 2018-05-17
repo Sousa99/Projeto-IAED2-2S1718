@@ -127,16 +127,16 @@ Item searchR(link_b h, Key v) {
     return searchR(h->r, v);
 }
 
-link_b freeR(link_b h) {
-    if (h==NULL)
-    return h;
-    h->l=freeR(h->l);
-    h->r=freeR(h->r);
-    return deleteR(h,key(h->item));
+void freeR(link_b h) {
+    if (h != NULL) {
+        freeR(h->l);
+        freeR(h->r);
+        free(h);
+    }
 }
 
 void STinit(link_b *head) { *head = NULL; }
 void STinsert(link_b *head, Item item) { *head = insertR(*head, item); }
 Item STsearch(link_b head, Key v) { return searchR(head, v); }
 void STdelete(link_b *head, Key k) { *head = deleteR(*head, k); }
-void STfree(link_b *head) { *head=freeR(*head); }
+void STfree(link_b *head) { freeR(*head); }

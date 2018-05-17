@@ -45,10 +45,10 @@ string getinput() {
  *  Frees all tasks, nodes from linked list, nodes from binary tree and lists
  */
 void freeAll(link_list tasks) {
+    /* Remove node of binary tree */
+    STfree(&tasks->head);
     /* Iterate over all nodes removing one by one */
     while (tasks->last != NULL) {
-        /* Remove node of binary tree */
-        STdelete(&tasks->head, tasks->last->task->id);
         /* Remove task */
         removeTask(tasks->last->task);
         /* Remove node of double linked list */

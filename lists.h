@@ -12,7 +12,6 @@
 link createNode(task_link new_task);
 void removeNode(link_list tasksList, link searched);
 link_list createList();
-void freeAll(link_list tasks);
 
 
 #endif
