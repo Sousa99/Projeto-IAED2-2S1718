@@ -26,16 +26,16 @@
  */
 string getinput() {
     size_t size = 0;
-    size_t len = 0;
+    size_t tamanho = 0;
     string buffer = NULL;
 
     /* While line doesn't have char '\n' repeat, meaning fgets didn't get full line */
     do {
-        size += MAXINPUT;
+        size = size + MAXINPUT;
         buffer = realloc(buffer, size);
-        fgets(buffer + len, size - len - 2, stdin);
-        len = strlen(buffer);
-    } while (!feof(stdin) && buffer[len - 1] != '\n');
+        fgets(buffer + tamanho, size - tamanho - 2, stdin);
+        tamanho = strlen(buffer);
+    } while (!feof(stdin) && buffer[tamanho - 1] != '\n');
 
     return buffer;
 }
