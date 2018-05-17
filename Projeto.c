@@ -40,6 +40,30 @@ string getinput() {
     return buffer;
 }
 
+void printReverse(simpleList list) {
+    simpleList temp, current_rev, reverse = NULL;
+
+    temp = list;
+    current_rev = reverse;
+    while (temp != NULL) {
+        current_rev = malloc(sizeof(struct sList));
+        current_rev->task = temp->task;
+        current_rev->next = reverse;
+        reverse = current_rev;
+
+        temp = temp->next;
+    }
+
+    current_rev = reverse;
+    while (current_rev != NULL) {
+        printf(" %lu", current_rev->task->id);
+
+        temp = current_rev;
+        current_rev = current_rev->next;
+        free(temp);
+    }
+}
+
 /**	Function: freeAll
  *	@param tasksList (link_list)
  *  Frees all tasks, nodes from linked list, nodes from binary tree and lists
@@ -126,7 +150,6 @@ void dependents_list(link_list tasksList, string buffer) {
     long unsigned task_id;
     task_link searched;
     link tempNode;
-    simpleList current;
 
     /* Get the id from buffer of the task */
     sscanf(buffer, "%lu%n", &task_id, &offset);
@@ -144,13 +167,7 @@ void dependents_list(link_list tasksList, string buffer) {
             searched = tempNode->task;
             printf("%lu:", searched->id);
             if (searched->dependents == NULL) printf(" no dependencies");
-            else {
-                current = searched->dependents;
-                while (current != NULL) {
-                    printf(" %lu", current->task->id);
-                    current = current->next;
-                }
-            }
+            else printReverse(searched->dependents);
             printf("\n");
         }
     }

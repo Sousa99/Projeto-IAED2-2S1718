@@ -258,11 +258,8 @@ int taskDependencies(link_list tasks, task_link new_task, string * buffer) {
             /* If list of dependents is empty therefore this will be the first */
             if (searched->dependents == NULL) searched->dependents = new_dependent;
             else {
-                current = searched->dependents;
-                /* Cycle through all dependents untill it's reached the end of list */
-                while (current->next != NULL) current = current->next;
-                /* The new dependent is added to the of the list */
-                current->next = new_dependent;
+                new_dependent->next = searched->dependents;
+                searched->dependents = new_dependent;
             }
         }
     }

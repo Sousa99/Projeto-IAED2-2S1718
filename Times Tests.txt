@@ -1,52 +1,52 @@
 
 Running test01.in
-real    0m0.025s
-user    0m0.000s
-sys     0m0.016s
-
-Running test02.in
-real    0m0.024s
+real    0m0.027s
 user    0m0.000s
 sys     0m0.000s
 
-Running test03.in
-real    0m0.025s
+Running test02.in
+real    0m0.042s
 user    0m0.000s
 sys     0m0.031s
 
+Running test03.in
+real    0m0.044s
+user    0m0.000s
+sys     0m0.000s
+
 Running test04.in
-real    0m0.027s
+real    0m0.123s
 user    0m0.000s
 sys     0m0.000s
 
 Running test05.in
-real    0m0.027s
+real    0m0.038s
 user    0m0.000s
 sys     0m0.016s
 
 Running test06.in
-real    0m4.287s
-user    0m0.000s
-sys     0m0.047s
+real    0m0.158s
+user    0m0.016s
+sys     0m0.063s
 
 Running test07.in
-real    0m14.651s
-user    0m14.453s
-sys     0m0.109s
+real    0m1.886s
+user    0m1.688s
+sys     0m0.078s
 
 Running test08.in
-real    0m15.684s
-user    0m15.266s
-sys     0m0.172s
+real    0m1.809s
+user    0m1.625s
+sys     0m0.109s
 
 Running test09.in
-real    0m0.323s
-user    0m0.281s
+real    0m0.351s
+user    0m0.266s
 sys     0m0.016s
 Files test09.out and test09.mine.out differ
 
 Running test10.in
-real    0m0.543s
-user    0m0.453s
+real    0m0.674s
+user    0m0.250s
 sys     0m0.063s
 Files test10.out and test10.mine.out differ
