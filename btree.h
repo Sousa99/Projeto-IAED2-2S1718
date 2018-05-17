@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "lists.h"
+#include "structs.h"
 
 #ifndef _BTREE_HEADER_
 
@@ -16,11 +16,9 @@ typedef link Item;
 
 /* ---------- Headers of Functions ---------- */
 void STinit(link_b*);
-int STcount(link_b);
 Item STsearch(link_b, Key);
 void STinsert(link_b*, Item);
 void STdelete(link_b*, Key);
-void STsort(link_b , void (*visit)(Item));
 void STfree(link_b *);
 
 #endif

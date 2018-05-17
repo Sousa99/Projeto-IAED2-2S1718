@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "task.h"
+#include "structs.h"
 
 #ifndef _LISTS_HEADER_
 
@@ -10,9 +10,9 @@
 
 /* ---------- Headers of Functions ---------- */
 link createNode(task_link new_task);
-void removeNode(list * tasksList, struct node * searched);
-list * createList();
-void freeAll(list * tasks);
+void removeNode(link_list tasksList, link searched);
+link_list createList();
+void freeAll(link_list tasks);
 
 
 #endif
