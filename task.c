@@ -74,7 +74,11 @@ task_link createTask(link_list tasks, string buffer) {
     return new_task;
 }
 
-void removeDependents(task_link task) {
+/**	Function: removeDependent
+ *	@param task (task_link)
+ *  Removes dependent created by task in another through dependencie
+ */
+void removeDependent(task_link task) {
     simpleList current_dependencie, current_dependent, temp;
 
     current_dependencie = task->dependencies;
@@ -114,7 +118,8 @@ void removeTask(task_link task) {
     simpleList temp;
 
     while (task->dependencies != NULL) {
-        removeDependents(task);
+        /* Remove dependent from task->dependencie */
+        removeDependent(task);
         
         temp = task->dependencies;
         task->dependencies = task->dependencies->next;
@@ -230,7 +235,8 @@ int taskDependencies(link_list tasks, task_link new_task, string * buffer) {
             printf("no such task\n");
 
             while (new_task->dependencies != NULL) {
-                removeDependents(new_task);
+                /* Remove dependent from task->dependencie */
+                removeDependent(new_task);
                 
                 current = new_task->dependencies;
                 new_task->dependencies = new_task->dependencies->next;
