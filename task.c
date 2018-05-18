@@ -74,50 +74,57 @@ task_link createTask(link_list tasks, string buffer) {
     return new_task;
 }
 
+void removeDependents(task_link task) {
+    simpleList current_dependencie, current_dependent, temp;
+
+    current_dependencie = task->dependencies;
+    current_dependent = current_dependencie->task->dependents;
+
+    /* If dependencie only has one dependent therefore is the task to remove */
+    if (current_dependent->next == NULL) {
+        /* Free the allocated memory for task's dependencie's dependent */
+        free(current_dependent);
+        current_dependencie->task->dependents = NULL;
+    }
+
+    /* Else if first depencie's dependent is the task to remove */
+    else if (current_dependent->task == task) {
+        temp = current_dependent;
+        current_dependencie->task->dependents = current_dependent->next;
+        /* Free the allocated memory for task's dependencie's dependent */
+        free(temp);
+    }
+
+    else {
+        while (current_dependent->next->task != task)
+            current_dependent = current_dependent->next;
+        temp = current_dependent->next;
+        current_dependent->next = current_dependent->next->next;
+        /* Free the allocated memory for task's dependencie's dependent */
+        free(temp);
+    }
+}
+
 /**	Function: removeTask
  *	@param task (task_link)
  *  Removes a task, freeing all memory previously allocated to this
  * task and to store it in others as dependencies
  */
 void removeTask(task_link task) {
-    simpleList current_dependencie, current_dependent, temp;
+    simpleList temp;
 
-    current_dependencie = task->dependencies;
-    while (current_dependencie != NULL) {
-        current_dependent = current_dependencie->task->dependents;
-
-        /* If dependencie only has one dependent therefore is the task to remove */
-        if (current_dependent->next == NULL) {
-            /* Free the allocated memory for task's dependencie's dependent */
-            free(current_dependent);
-            current_dependencie->task->dependents = NULL;
-        }
-
-        /* Else if first depencie's dependent is the task to remove */
-        else if (current_dependent->task == task) {
-            temp = current_dependent;
-            current_dependencie->task->dependents = current_dependent->next;
-            /* Free the allocated memory for task's dependencie's dependent */
-            free(temp);
-        }
-
-        else {
-            while (current_dependent->next->task != task)
-                current_dependent = current_dependent->next;
-            temp = current_dependent->next;
-            current_dependent->next = current_dependent->next->next;
-            /* Free the allocated memory for task's dependencie's dependent */
-            free(temp);
-        }
+    while (task->dependencies != NULL) {
+        removeDependents(task);
         
-        temp = current_dependencie;
-        current_dependencie = current_dependencie->next;
+        temp = task->dependencies;
+        task->dependencies = task->dependencies->next;
         /* Free the allocated memory for task's dependencie */
         free(temp);
     }
 
     freeTask(task);
 }
+
 
 /**	Function: removeTask
  *	@param task (task_link)
@@ -221,6 +228,16 @@ int taskDependencies(link_list tasks, task_link new_task, string * buffer) {
         /* In case id given for dependencie doesn't exist in tasks */
         if (tempNode == NULL) {
             printf("no such task\n");
+
+            while (new_task->dependencies != NULL) {
+                removeDependents(new_task);
+                
+                current = new_task->dependencies;
+                new_task->dependencies = new_task->dependencies->next;
+                /* Free the allocated memory for task's dependencie */
+                free(current);
+            }
+
             return 0;
         }
 
