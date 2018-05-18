@@ -26,16 +26,16 @@
  */
 string getinput() {
     size_t size = 0;
-    size_t tamanho = 0;
+    size_t length = 0;
     string buffer = NULL;
 
     /* While line doesn't have char '\n' repeat, meaning fgets didn't get full line */
     do {
         size = size + MAXINPUT;
         buffer = realloc(buffer, size);
-        fgets(buffer + tamanho, size - tamanho - 2, stdin);
-        tamanho = strlen(buffer);
-    } while (!feof(stdin) && buffer[tamanho - 1] != '\n');
+        fgets(buffer + length, size - length - 2, stdin);
+        length = strlen(buffer);
+    } while (!feof(stdin) && buffer[length - 1] != '\n');
 
     return buffer;
 }
@@ -69,7 +69,7 @@ void printReverse(simpleList list) {
  *  Frees all tasks, nodes from linked list, nodes from binary tree and lists
  */
 void freeAll(link_list tasks) {
-    /* Remove node of binary tree */
+    /* Remove all nodes of binary tree */
     STfree(&tasks->head);
     /* Iterate over all nodes removing one by one */
     while (tasks->last != NULL) {
