@@ -1,6 +1,8 @@
 #include "task.h"
 #include "btree.h"
 
+#define MAXDESCRIPTION 8000
+
 /**	Function: setupTask
  *	@return new_task (task_link)
  *  Inicializes a Task and all its charactheristics
@@ -189,6 +191,9 @@ string taskDescription(string * buffer) {
     if (end == NULL) return NULL;
     /* Change second " for end of string characther */
     *end = '\0';
+
+    /* Verify if string is superior than 8000 characthers */
+    if (end - beg > MAXDESCRIPTION - 2) return NULL;
 
     /* Advance buffer to after description in order to get rest of arguments after */
     *buffer = end + 1;
