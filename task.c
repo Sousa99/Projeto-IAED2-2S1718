@@ -3,77 +3,15 @@
 
 #define MAXDESCRIPTION 8000
 
-/**	Function: setupTask
- *	@return new_task (task_link)
- *  Inicializes a Task and all its charactheristics
+/**	Function: removeTask
+ *	@param task (task_link)
+ *  Frees the allocated memory for the task itself and the description
  */
-task_link setupTask() {
-    task_link new_task;
-
-    /* Allocates memory for a task */
-    new_task = malloc(sizeof(struct task));
-    new_task->id = 0;
-    new_task->description = NULL;
-    new_task->duration = 0;
-    new_task->dependencies = NULL;
-    new_task->dependents = NULL;
-    new_task->early_start = 0;
-    new_task->late_start = 0;
-    return new_task;
-}
-
-/**	Function: createTask
- *	@param tasks (link_list)
- *  @param buffer (string)
- *  @return new_task
- *  Gets all information needed and given by user from buffer
- */
-task_link createTask(link_list tasks, string buffer) {
-    int offset = 0;
-    task_link new_task;
-
-    /* Setup / initialize new_task in order to store necessary information */
-    new_task = setupTask();
-
-    /* Get from buffer the id given by user to the new task */
-    sscanf(buffer, "%lu%n", &new_task->id, &offset);
-    buffer = buffer + offset;
-    /* Verify if the id given is already stored in tasks and therefore not available */
-    if (STsearch(tasks->head, new_task->id) != NULL) {
-        printf("id already exists\n");
-        freeTask(new_task);
-        return NULL;
-    }
-
-    /* Store description from buffer into new_task */
-    new_task->description = taskDescription(&buffer);
-    /* Verify if the argument given for description is invalid */
-    if (new_task->description == NULL) {
-        printf("illegal arguments\n");
-        freeTask(new_task);
-        return NULL;
-    }
-
-    /* Get from buffer the duration given by user to the new task */
-    sscanf(buffer, "%lu%n", &new_task->duration, &offset);
-    buffer = buffer + offset;
-    /* Verify if the argument given for duration is valid */
-    if (new_task->id == 0 || new_task->duration == 0) {
-        printf("illegal arguments\n");
-        freeTask(new_task);
-        return NULL;
-    }
-
-    /* Store dependencies given by user in new_task and verify if argument is valid */
-    if (!taskDependencies(tasks, new_task, &buffer)) {
-        freeTask(new_task);
-        return NULL;
-    }
-
-    /* Setup the early start of new_task */
-    setupEarly_Start(new_task);
-
-    return new_task;
+void freeTask(task_link task) {
+    /* Free the allocated memory for task's description */
+    free(task->description);
+    /* Free the allocated memory for task itself */
+    free(task);
 }
 
 /**	Function: removeDependent
@@ -132,44 +70,85 @@ void removeTask(task_link task) {
     freeTask(task);
 }
 
-
-/**	Function: removeTask
+/**	Function: setupEarly_Start
  *	@param task (task_link)
- *  Frees the allocated memory for the task itself and the description
+ *  Calculates and stores early start of task in task
  */
-void freeTask(task_link task) {
-    /* Free the allocated memory for task's description */
-    free(task->description);
-    /* Free the allocated memory for task itself */
-    free(task);
+void setupEarly_Start(task_link task) {
+    task_link currentMax;
+    simpleList current;
+    
+    /* If task has dependencies */
+    if (task->dependencies != NULL) {
+        currentMax = task->dependencies->task;
+        current = task->dependencies;
+        /* Find depedencie wich duration plus early start is maximum */
+        while (current != NULL) {
+            if (currentMax->duration + currentMax->early_start < 
+            current->task->duration + current->task->early_start) 
+                currentMax = current->task;
+            current = current->next;
+        }
+        task->early_start = currentMax->duration + currentMax->early_start;
+    }
+    /* If task has no dependencies early start remains 0 */
+    else task->early_start = 0;
 }
 
-/**	Function: showTask
- *	@param tasks (link_list)
- *  @param current (task_link)
- *  Prints current task accordingly
+/**	Function: setupLate_Start
+ *	@param task (task_link)
+ *  @param path_duration (long unsigned)
+ *  Calculates and stores late start of task in task
  */
-void showTask(link_list tasks, task_link current) {
-    simpleList current_dependencies;
+void setupLate_Start(task_link task, long unsigned path_duration) {
+    simpleList current;
 
-    printf("%lu \"%s\" %lu",
-        current->id, current->description, current->duration);
-
-    if (tasks->path) {
-        printf(" [%lu ", current->early_start);
-        if (current->early_start == current->late_start)
-            printf("CRITICAL]");
-        else printf("%lu]", current->late_start);
+    /* If task doesn't have dependents late start is path duration less its duration */
+    if (task->dependents == NULL) task->late_start = path_duration - task->duration;
+    else {
+        task->late_start = task->dependents->task->late_start - task->duration;
+        current = task->dependents;
+        /* Find dependent with minimum late start */
+        while (current != NULL) {
+            if (task->late_start > current->task->late_start - task->duration)
+                task->late_start = current->task->late_start - task->duration;
+            current = current->next;
+        }
     }
+}
+
+/**	Function: setupPath_duration
+ *	@param tasks (link_list)
+ *  Calculates critical path duration accordingly and stores it in tasks->path_duration
+ */
+void setupPath_duration(link_list tasks) {
+    link current = tasks->first;
     
-    current_dependencies = current->dependencies;
-    /* Print all dependecies of current */
-    while (current_dependencies != NULL) {
-        printf(" %lu", current_dependencies->task->id);
-        current_dependencies = current_dependencies->next;
+    while (current != NULL) {
+        if (current->task->dependents == NULL &&
+            current->task->duration + current->task->early_start > tasks->path_duration)
+                tasks->path_duration = current->task->duration + current->task->early_start;
+        current = current->next;
     }
+}
 
-    printf("\n");
+/**	Function: setupTask
+ *	@return new_task (task_link)
+ *  Inicializes a Task and all its charactheristics
+ */
+task_link setupTask() {
+    task_link new_task;
+
+    /* Allocates memory for a task */
+    new_task = malloc(sizeof(struct task));
+    new_task->id = 0;
+    new_task->description = NULL;
+    new_task->duration = 0;
+    new_task->dependencies = NULL;
+    new_task->dependents = NULL;
+    new_task->early_start = 0;
+    new_task->late_start = 0;
+    return new_task;
 }
 
 /**	Function: taskDescription
@@ -295,64 +274,84 @@ int taskDependencies(link_list tasks, task_link new_task, string * buffer) {
     return 1;
 }
 
-/**	Function: setupEarly_Start
- *	@param task (task_link)
- *  Calculates and stores early start of task in task
- */
-void setupEarly_Start(task_link task) {
-    task_link currentMax;
-    simpleList current;
-    
-    /* If task has dependencies */
-    if (task->dependencies != NULL) {
-        currentMax = task->dependencies->task;
-        current = task->dependencies;
-        /* Find depedencie wich duration plus early start is maximum */
-        while (current != NULL) {
-            if (currentMax->duration + currentMax->early_start < 
-            current->task->duration + current->task->early_start) 
-                currentMax = current->task;
-            current = current->next;
-        }
-        task->early_start = currentMax->duration + currentMax->early_start;
-    }
-    /* If task has no dependencies early start remains 0 */
-    else task->early_start = 0;
-}
-
-/**	Function: setupLate_Start
- *	@param task (task_link)
- *  @param path_duration (long unsigned)
- *  Calculates and stores late start of task in task
- */
-void setupLate_Start(task_link task, long unsigned path_duration) {
-    simpleList current;
-
-    /* If task doesn't have dependents late start is path duration less its duration */
-    if (task->dependents == NULL) task->late_start = path_duration - task->duration;
-    else {
-        task->late_start = task->dependents->task->late_start - task->duration;
-        current = task->dependents;
-        /* Find dependent with minimum late start */
-        while (current != NULL) {
-            if (task->late_start > current->task->late_start - task->duration)
-                task->late_start = current->task->late_start - task->duration;
-            current = current->next;
-        }
-    }
-}
-
-/**	Function: setupPath_duration
+/**	Function: createTask
  *	@param tasks (link_list)
- *  Calculates critical path duration accordingly and stores it in tasks->path_duration
+ *  @param buffer (string)
+ *  @return new_task
+ *  Gets all information needed and given by user from buffer
  */
-void setupPath_duration(link_list tasks) {
-    link current = tasks->first;
-    
-    while (current != NULL) {
-        if (current->task->dependents == NULL &&
-            current->task->duration + current->task->early_start > tasks->path_duration)
-                tasks->path_duration = current->task->duration + current->task->early_start;
-        current = current->next;
+task_link createTask(link_list tasks, string buffer) {
+    int offset = 0;
+    task_link new_task;
+
+    /* Setup / initialize new_task in order to store necessary information */
+    new_task = setupTask();
+
+    /* Get from buffer the id given by user to the new task */
+    sscanf(buffer, "%lu%n", &new_task->id, &offset);
+    buffer = buffer + offset;
+    /* Verify if the id given is already stored in tasks and therefore not available */
+    if (STsearch(tasks->head, new_task->id) != NULL) {
+        printf("id already exists\n");
+        freeTask(new_task);
+        return NULL;
     }
+
+    /* Store description from buffer into new_task */
+    new_task->description = taskDescription(&buffer);
+    /* Verify if the argument given for description is invalid */
+    if (new_task->description == NULL) {
+        printf("illegal arguments\n");
+        freeTask(new_task);
+        return NULL;
+    }
+
+    /* Get from buffer the duration given by user to the new task */
+    sscanf(buffer, "%lu%n", &new_task->duration, &offset);
+    buffer = buffer + offset;
+    /* Verify if the argument given for duration is valid */
+    if (new_task->id == 0 || new_task->duration == 0) {
+        printf("illegal arguments\n");
+        freeTask(new_task);
+        return NULL;
+    }
+
+    /* Store dependencies given by user in new_task and verify if argument is valid */
+    if (!taskDependencies(tasks, new_task, &buffer)) {
+        freeTask(new_task);
+        return NULL;
+    }
+
+    /* Setup the early start of new_task */
+    setupEarly_Start(new_task);
+
+    return new_task;
+}
+
+/**	Function: showTask
+ *	@param tasks (link_list)
+ *  @param current (task_link)
+ *  Prints current task accordingly
+ */
+void showTask(link_list tasks, task_link current) {
+    simpleList current_dependencies;
+
+    printf("%lu \"%s\" %lu",
+        current->id, current->description, current->duration);
+
+    if (tasks->path) {
+        printf(" [%lu ", current->early_start);
+        if (current->early_start == current->late_start)
+            printf("CRITICAL]");
+        else printf("%lu]", current->late_start);
+    }
+    
+    current_dependencies = current->dependencies;
+    /* Print all dependecies of current */
+    while (current_dependencies != NULL) {
+        printf(" %lu", current_dependencies->task->id);
+        current_dependencies = current_dependencies->next;
+    }
+
+    printf("\n");
 }
